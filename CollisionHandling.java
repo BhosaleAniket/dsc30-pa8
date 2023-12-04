@@ -21,9 +21,7 @@ public class CollisionHandling {
      * @return hashtable representation after insertions
      */
     public static int[][] quadraticProbingResult(){
-        int[][] output = new int[2][16];
-        output[0] = new int[]{101,0,0,16,0,26,11,0,0,0,0,0,0,0,0,0};
-        output[1] = new int[]{201,0,0,16,34,2,0,0,101,0,0,0,9,26,11,0};
+        int[][] output = new int[][]{{101,0,0,16,0,26,11,0}, {201,0,0,16,34,2,0,0,101,0,0,0,9,26,11,0}};
         return output;
     }
 

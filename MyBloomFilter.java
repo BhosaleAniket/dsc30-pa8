@@ -16,6 +16,15 @@ public class MyBloomFilter implements KeyedSet {
 
     boolean[] bits;
 
+    private static final int FILTER_A_LEFT_SHIFT = 5; // function a const
+    private static final int FILTER_A_RIGHT_SHIFT = 27; // function a const
+
+    private static final int FILTER_B_HASH_VAL = 27; // function b const
+
+    private static final int FILTER_C_HASH_VAL = 8; //function c counst
+
+
+
     /**
      * Initialize MyBloomFilter with the default number of bits
      */
@@ -39,6 +48,7 @@ public class MyBloomFilter implements KeyedSet {
         int index2 = this.hashFuncB(key);
         int index3 = this.hashFuncC(key);
 
+        // checks the index of all indices and sets them to true
         if(this.bits[index1] == false){
             this.bits[index1] = true;
         }
@@ -86,8 +96,8 @@ public class MyBloomFilter implements KeyedSet {
     private int hashFuncA(String value) {
         int hashValue = 0;
         for(int i=0; i < value.length(); i++){
-            int leftShiftedValue = hashValue << 5;
-            int rightShiftedValue = hashValue >>> 27;
+            int leftShiftedValue = hashValue << FILTER_A_LEFT_SHIFT;
+            int rightShiftedValue = hashValue >>> FILTER_A_RIGHT_SHIFT;
 
             hashValue = Math.abs((leftShiftedValue | rightShiftedValue) ^ value.charAt(i));
         }
@@ -103,7 +113,7 @@ public class MyBloomFilter implements KeyedSet {
         int hashVal = 0;
         for(int j=0; j < value.length(); j++){
             int letter = value.charAt(j);
-            hashVal = (hashVal*27 + letter) % this.bits.length;
+            hashVal = (hashVal*FILTER_B_HASH_VAL + letter) % this.bits.length;
         }
         return hashVal;
     }
@@ -117,7 +127,7 @@ public class MyBloomFilter implements KeyedSet {
         int hashVal = 0;
         for (int j = 0; j < value.length(); j++) {
             int letter = value.charAt(j);
-            hashVal = ((hashVal << 8) + letter) % bits.length;
+            hashVal = ((hashVal << FILTER_C_HASH_VAL) + letter) % bits.length;
         }
         return Math.abs(hashVal % bits.length);
     }

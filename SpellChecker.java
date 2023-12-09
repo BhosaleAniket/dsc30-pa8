@@ -18,8 +18,15 @@ import java.util.Scanner;
 
 public class SpellChecker {
 
-    public KeyedSet dictWords;
+    public KeyedSet dictWords; //base data holder for the spellchecker
+    private static final int LETTER_COUNT = 26; // alphabet count
+    private static final int FILE_POS = 2; // position of file name in cmd input
 
+    /**
+     * Reads the data into the KeyedSet
+     * @param reader Reader object for the text to build the checker from
+     * @param useHashTable true if we want to use a MyHashTable to store the words
+     */
     public void readDictionary(Reader reader, boolean useHashTable) {
         if(useHashTable){
              this.dictWords = new MyHashTable();
@@ -28,6 +35,7 @@ public class SpellChecker {
             this.dictWords = new MyBloomFilter();
         }
 
+        // parses words into the dataholder
         Scanner scanner = new Scanner(reader);
         while (scanner.hasNextLine()) {
             String word = scanner.nextLine().trim();
@@ -38,10 +46,16 @@ public class SpellChecker {
         scanner.close();
     }
 
+    /**
+     * Checks for incorrect letter
+     * @param word to check
+     * @return String linkedlist of sugesstions
+     */
     private LinkedList<String> checkWrongLetter(String word) {
         LinkedList<String> output = new LinkedList<>();
+        // iterate through all positions and letters and check if the word is in the set
         for(int i =0; i < word.length(); i++){
-            for(int letter=0; letter < 26; letter++){
+            for(int letter=0; letter < LETTER_COUNT; letter++){
                 String modWord = word.substring(0,i) + (char)('a'+letter) +
                         word.substring(i+1);
                 if(this.dictWords.lookup(modWord)){
@@ -55,10 +69,17 @@ public class SpellChecker {
         return output;
     }
 
+    /**
+     * Checks for Missing letter
+     * @param word to check
+     * @return String linkedlist of sugesstions
+     */
     private LinkedList<String> checkInsertedLetter(String word) {
+
+        // iterate through all positions and letters and check if the word is in the set
         LinkedList<String> output = new LinkedList<>();
         for(int i =0; i < word.length(); i++){
-            for(int letter=0; letter < 26; letter++){
+            for(int letter=0; letter < LETTER_COUNT; letter++){
                 String modWord = word.substring(0,i) + (char)('a'+letter) +
                         word.substring(i);
                 if(this.dictWords.lookup(modWord)){
@@ -68,7 +89,8 @@ public class SpellChecker {
                 }
             }
 
-            for(int letter=0; letter < 26; letter++){
+            // iterate through all positions and letters and check if the word is in the set (last)
+            for(int letter=0; letter < LETTER_COUNT; letter++){
                 String modWord = word + (char)('a'+letter);
                 if(this.dictWords.lookup(modWord)){
                     if(!output.contains(modWord)){
@@ -81,10 +103,17 @@ public class SpellChecker {
         return output;
     }
 
+    /**
+     * Checks for Extra letter
+     * @param word to check
+     * @return String linkedlist of sugesstions
+     */
     private LinkedList<String> checkDeleted(String word) {
+        // iterate through all positions and letters and check if the word is in the set
+
         LinkedList<String> output = new LinkedList<>();
         for(int i =0; i < word.length(); i++){
-            for(int letter=0; letter < 26; letter++){
+            for(int letter=0; letter < LETTER_COUNT; letter++){
                 String modWord = word.substring(0,i) + word.substring(i+1);
                 if(this.dictWords.lookup(modWord)){
                     if(!output.contains(modWord)){
@@ -97,7 +126,14 @@ public class SpellChecker {
         return output;
     }
 
+    /**
+     * Checks for Swapped letter
+     * @param word to check
+     * @return String linkedlist of sugesstions
+     */
     private LinkedList<String> checkTransposedLetter(String word) {
+        // iterate through all positions and letters and check if the word is in the set
+
         LinkedList<String> output = new LinkedList<>();
         for(int i = 0; i < word.length()-1; i++){
             String modWord = word.substring(0,i) + word.charAt(i+1) + word.charAt(i)
@@ -111,7 +147,14 @@ public class SpellChecker {
         return output;
     }
 
+    /**
+     * Checks for Missing Space letter
+     * @param word to check
+     * @return String linkedlist of sugesstions
+     */
     private LinkedList<String> checkInsertSpace(String word) {
+        // iterate through all positions and letters and check if the word is in the set
+
         LinkedList<String> output = new LinkedList<>();
         for(int i =0; i < word.length(); i++){
                 String modWord = word.substring(0,i) + ' ' + word.substring(i);
@@ -128,6 +171,11 @@ public class SpellChecker {
         return output;
     }
 
+    /**
+     * Calls all the check functions and generates results
+     * @param word to check
+     * @return String array of sugesstions
+     */
     private String[] checkWord(String word) {
         LinkedList<String> l1 = this.checkWrongLetter(word);
         LinkedList<String> l2 = this.checkInsertedLetter(word);
@@ -149,7 +197,12 @@ public class SpellChecker {
         return combinedList.toArray(new String[0]);
     }
 
-    // Helper method to add elements to the list without duplicates
+
+    /**
+     * Helper method to add elements to the list without duplicates
+     * @param list to check
+     * @param elements to add
+     */
     private void addWithoutDuplicates(List<String> list, LinkedList<String> elements) {
         for (String element : elements) {
             if (!list.contains(element)) {
@@ -159,6 +212,10 @@ public class SpellChecker {
     }
 
 
+    /**
+     * Main method for SpellChecker
+     * @param args to configure spellchecker and dict
+     */
     public static void main(String[] args) {
         // args[0]: 0 if we should use a MyHashTable and 1 for a MyBloomFilter
         // args[1]: path to dict file
@@ -182,7 +239,7 @@ public class SpellChecker {
             System.exit(1);
         }
 
-        File inputFile = new File(args[2]);
+        File inputFile = new File(args[FILE_POS]);
         try {
             Scanner input = new Scanner(inputFile); // Reads list of words
             while (input.hasNextLine()) {
@@ -194,9 +251,11 @@ public class SpellChecker {
                 else{
                     String[] corrections = checker.checkWord(word);
                     if(corrections == null || corrections.length == 0){
+                        // if no corrections found
                         System.out.println(word+": not found");
                     }
                     else{
+                        // prints out corrections
                         String output = "";
                         for(int i = 0; i < corrections.length-1; i++){
                             output = output + corrections[i] + ", ";
